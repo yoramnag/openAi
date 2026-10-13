@@ -1,7 +1,6 @@
 package com.example.openai.controller;
 
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -11,22 +10,28 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 public class ChatController {
 
-    private final ChatClient openAiChatClient;
-    private final ChatClient ollamaChatClient;
+    private final ChatClient chatClient;
 
-    public ChatController(@Qualifier("openAiChatClient") ChatClient openAiChatClient,
-                                    @Qualifier("ollamaChatClient") ChatClient ollamaChatClient) {
-        this.openAiChatClient = openAiChatClient;
-        this.ollamaChatClient = ollamaChatClient;
+    public ChatController(ChatClient chatClient) {
+        this.chatClient = chatClient;
     }
 
-    @GetMapping("/openai/chat")
-    public String openAIChat(@RequestParam("message") String message) {
-        return openAiChatClient.prompt(message).call().content();
+
+    @GetMapping("/chat")
+    public String chat(@RequestParam("message") String message) {
+        return chatClient
+                .prompt()
+                //.advisors(new TokenUsageAuditAdvisor())
+                .system("""
+                        You are an internal IT helpdesk assistant. Your role is to assist 
+                        employees with IT-related issues such as resetting passwords, 
+                        unlocking accounts, and answering questions related to IT policies.
+                        If a user requests help with anything outside of these 
+                        responsibilities, respond politely and inform them that you are 
+                        only able to assist with IT support tasks within your defined scope.
+                        """)
+                .user(message)
+                .call().content();
     }
 
-    @GetMapping("/ollama/chat")
-    public String ollamaChat(@RequestParam("message") String message) {
-        return ollamaChatClient.prompt(message).call().content();
-    }
 }
