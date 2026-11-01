@@ -11,6 +11,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestClient;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,7 +79,7 @@ public class WebSearchDocumentRetriever implements DocumentRetriever {
     }
 
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    record TavilyRequestPayload(String query, String searchDepth, int maxResults) {}
+    record TavilyRequestPayload(String query, @JsonProperty("search_depth") String searchDepth, @JsonProperty("max_results") int maxResults) {}
 
     record TavilyResponsePayload(List<Hit> results) {
         record Hit(String title, String url, String content, Double score) {}
